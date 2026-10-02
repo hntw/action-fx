@@ -36,3 +36,5 @@ ActionFX.draw(ctx, t, { effect, x, y, w, h }); // pure function of t (seconds), 
 - `index.html` is the archive/demo page.
 - `review/sheet.html` + `review/shot.sh` render a contact sheet (rows = effects, `?fx=a;b:{"opt":1}`).
 - `review/mock.mjs` runs every effect through `draw()` in node with odd sizes and modes to catch errors and NaNs.
+
+Made for fun by Jamie Grove and Claude.
