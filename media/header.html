@@ -1,0 +1,75 @@
+<!doctype html><meta charset="utf-8">
+<!-- The README header, drawn by actionfx.js itself. Render: media/shot.sh -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<body style="margin:0;background:#fbf8ef">
+<canvas id="c"></canvas>
+<script src="../actionfx.js"></script>
+<script>
+const W = 1280, H = 640, Z = 2, PAPER = '#fbf8ef', INK = '#1b1a1f', RED = '#e2412f', YEL = '#ffd23f', BLUE = '#2f6fdb';
+const c = document.getElementById('c'), x = c.getContext('2d');
+c.width = W * Z; c.height = H * Z; c.style.width = W + 'px'; c.style.display = 'block';
+x.scale(Z, Z);
+const fx = (effect, r, o) => ActionFX.draw(x, 0, { effect, still: true, color: INK, fill: PAPER, x: r.x, y: r.y, w: r.w, h: r.h, seed: 5, ...o });
+
+document.fonts.load('400 200px Bangers').then(() => document.fonts.load('700 26px "Atkinson Hyperlegible"')).then(() => document.fonts.load('400 21px "Atkinson Hyperlegible"')).then(() => {
+  // paper with halftone dots, fading toward the middle
+  x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
+  for (let py = 6; py < H; py += 11) for (let px = (py / 11 % 2) * 5.5 + 6; px < W; px += 11) {
+    const d = Math.hypot((px - W / 2) / W, (py - 250) / H), r = Math.max(0, (d - 0.22) * 4.2);
+    if (r > 0.2) { x.fillStyle = 'rgba(27,26,31,.13)'; x.beginPath(); x.arc(px, py, Math.min(r, 2.4), 0, 7); x.fill(); }
+  }
+  // inked panel border
+  x.lineWidth = 6; x.strokeStyle = INK; x.strokeRect(14, 14, W - 28, H - 28);
+
+  // title: yellow burst plate, then ACTION FX with an offset shadow
+  x.font = '400 196px Bangers'; x.textBaseline = 'alphabetic';
+  const a = 'ACTION ', f = 'FX', wa = x.measureText(a).width, wf = x.measureText(f).width, tw = wa + wf;
+  const tx = (W - tw) / 2, base = 288, top = base - 150, th = 160;
+  x.save(); x.translate(W / 2, base - 75); x.rotate(-0.035);
+  x.fillStyle = YEL; x.strokeStyle = INK; x.lineWidth = 5;
+  x.beginPath(); x.roundRect(-tw / 2 - 40, -98, tw + 80, 196, 22); x.fill(); x.stroke();
+  x.restore();
+  x.lineJoin = 'round';
+  [[a, tx, '#fff'], [f, tx + wa, RED]].forEach(([s, px, col]) => {
+    x.fillStyle = INK; x.fillText(s, px + 8, base + 8);
+    x.lineWidth = 10; x.strokeStyle = INK; x.strokeText(s, px, base);
+    x.fillStyle = col; x.fillText(s, px, base);
+  });
+  fx('emanata', { x: W / 2 - tw / 2 - 40, y: top - 22, w: tw + 80, h: 196 }, { count: 26, length: 26, width: 6, gap: 16, seed: 11 });
+
+  // tagline
+  x.fillStyle = INK; x.textAlign = 'center'; x.font = '700 31px "Atkinson Hyperlegible"';
+  x.fillText('Make every click hit like a comic book.', W / 2, 404);
+  x.font = '400 21px "Atkinson Hyperlegible"'; x.fillStyle = '#5d5a63';
+  x.fillText('10 hand-inked effects  \u2022  one 7 KB file  \u2022  zero dependencies', W / 2, 440);
+
+  // caption boxes, comic style: free + open source (top left), the demo URL (top right)
+  const cap = (text, px, py, bg, fg, right) => {
+    x.font = '700 17px "Atkinson Hyperlegible"'; x.textBaseline = 'middle'; x.textAlign = 'left';
+    const w = x.measureText(text).width + 30, bx = right ? px - w : px;
+    x.fillStyle = bg; x.strokeStyle = INK; x.lineWidth = 5; x.fillRect(bx, py, w, 40); x.strokeRect(bx, py, w, 40);
+    x.fillStyle = fg; x.fillText(text, bx + 15, py + 21); x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  };
+  cap('FREE + OPEN SOURCE (MIT)', 14, 14, YEL, INK);
+  cap('TRY IT: hntw.github.io/action-fx', W - 14, 14, INK, '#fff', true);
+
+  // a row of buttons, each mid-effect
+  const btns = [
+    ['SEND', RED, '#fff', 'briffits', { from: 'left', size: 9, count: 6 }],
+    ['SAVED!', YEL, INK, 'solrads', { length: 14, width: 3.2, gap: 8, sparkles: 0 }],
+    ['ERROR', '#fff', INK, 'plewds', { size: 10 }],
+    ['LOADING', BLUE, '#fff', 'squeans', { size: 11 }],
+    ['@#$%!', '#fff', INK, 'grawlixes', { size: 22 }],
+    ['NEXT', RED, '#fff', 'speedlines', { length: 26, width: 3, gap: 10 }],
+  ];
+  x.font = '400 34px Bangers'; const bw = 140, bh = 56, gap = 54, row = btns.length * bw + (btns.length - 1) * gap;
+  btns.forEach(([label, bg, fg, effect, o], i) => {
+    const r = { x: (W - row) / 2 + i * (bw + gap), y: 528, w: bw, h: bh };
+    x.fillStyle = INK; x.beginPath(); x.roundRect(r.x + 5, r.y + 5, bw, bh, 14); x.fill();
+    x.fillStyle = bg; x.lineWidth = 4; x.strokeStyle = INK; x.beginPath(); x.roundRect(r.x, r.y, bw, bh, 14); x.fill(); x.stroke();
+    x.fillStyle = fg; x.textBaseline = 'middle'; x.fillText(label, r.x + bw / 2, r.y + bh / 2 + 2);
+    fx(effect, r, { scale: 1.5, ...o });
+  });
+  document.title = 'ready';
+});
+</script>
