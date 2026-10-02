@@ -1,17 +1,31 @@
 <!doctype html><meta charset="utf-8">
-<!-- The README header, drawn by actionfx.js itself. Render: media/shot.sh -->
+<!-- The README header, drawn by actionfx.js itself. No ?t: the still (peak frames), see media/shot.sh.
+     ?t=seconds: a frame of the looping animation; &n=frames&dt=step stacks n frames down the page (media/anim.sh).
+     ?z=pixel ratio. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <body style="margin:0;background:#fbf8ef">
 <canvas id="c"></canvas>
 <script src="../actionfx.js"></script>
 <script>
-const W = 1280, H = 640, Z = 2, PAPER = '#fbf8ef', INK = '#1b1a1f', RED = '#e2412f', YEL = '#ffd23f', BLUE = '#2f6fdb';
+const q = new URLSearchParams(location.search), T0 = q.has('t') ? +q.get('t') : null, N = +(q.get('n') || 1), DT = +(q.get('dt') || 0.04);
+let T = T0;
+const W = 1280, H = 640, Z = +(q.get('z') || 2), PAPER = '#fbf8ef', INK = '#1b1a1f', RED = '#e2412f', YEL = '#ffd23f', BLUE = '#2f6fdb';
 const c = document.getElementById('c'), x = c.getContext('2d');
-c.width = W * Z; c.height = H * Z; c.style.width = W + 'px'; c.style.display = 'block';
+c.width = W * Z; c.height = H * Z * N; c.style.width = W + 'px'; c.style.display = 'block';
 x.scale(Z, Z);
-const fx = (effect, r, o) => ActionFX.draw(x, 0, { effect, still: true, color: INK, fill: PAPER, x: r.x, y: r.y, w: r.w, h: r.h, seed: 5, ...o });
+const fx = (effect, r, o, start = 0) => ActionFX.draw(x, T == null ? 0 : T - start,
+  { effect, still: T == null, color: INK, fill: PAPER, x: r.x, y: r.y, w: r.w, h: r.h, seed: 5, ...o });
+// the library's own squash keyframes (emanata move): 1, 0.92, 1.045, 1 at 0, 22%, 60%, 100% of 380 ms
+const squash = t => { if (t == null || t < 0 || t > 0.38) return 1; const u = t / 0.38, K = [[0, 1], [0.22, 0.92], [0.6, 1.045], [1, 1]];
+  for (let i = 1; i < K.length; i++) if (u <= K[i][0]) { const v = (u - K[i - 1][0]) / (K[i][0] - K[i - 1][0]), e = v * v * (3 - 2 * v); return K[i - 1][1] + (K[i][1] - K[i - 1][1]) * e; } return 1; };
+const LOOP = 3.6; // seconds; the title bursts at 0, then the buttons fire left to right
 
 document.fonts.load('400 200px Bangers').then(() => document.fonts.load('700 26px "Atkinson Hyperlegible"')).then(() => document.fonts.load('400 21px "Atkinson Hyperlegible"')).then(() => {
+  for (let j = 0; j < N; j++) { T = T0 == null ? null : T0 + j * DT; x.save(); x.translate(0, j * H); scene(); x.restore(); }
+  document.title = 'ready';
+});
+
+function scene() {
   // paper with halftone dots, fading toward the middle
   x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
   for (let py = 6; py < H; py += 11) for (let px = (py / 11 % 2) * 5.5 + 6; px < W; px += 11) {
@@ -25,6 +39,7 @@ document.fonts.load('400 200px Bangers').then(() => document.fonts.load('700 26p
   x.font = '400 196px Bangers'; x.textBaseline = 'alphabetic';
   const a = 'ACTION ', f = 'FX', wa = x.measureText(a).width, wf = x.measureText(f).width, tw = wa + wf;
   const tx = (W - tw) / 2, base = 288, top = base - 150, th = 160;
+  const k = squash(T); x.save(); x.translate(W / 2, base - 75); x.scale(k, k); x.translate(-W / 2, -(base - 75));
   x.save(); x.translate(W / 2, base - 75); x.rotate(-0.035);
   x.fillStyle = YEL; x.strokeStyle = INK; x.lineWidth = 5;
   x.beginPath(); x.roundRect(-tw / 2 - 40, -98, tw + 80, 196, 22); x.fill(); x.stroke();
@@ -35,6 +50,7 @@ document.fonts.load('400 200px Bangers').then(() => document.fonts.load('700 26p
     x.lineWidth = 10; x.strokeStyle = INK; x.strokeText(s, px, base);
     x.fillStyle = col; x.fillText(s, px, base);
   });
+  x.restore();
   fx('emanata', { x: W / 2 - tw / 2 - 40, y: top - 22, w: tw + 80, h: 196 }, { count: 26, length: 26, width: 6, gap: 16, seed: 11 });
 
   // tagline
@@ -63,13 +79,15 @@ document.fonts.load('400 200px Bangers').then(() => document.fonts.load('700 26p
     ['NEXT', RED, '#fff', 'speedlines', { length: 26, width: 3, gap: 10 }],
   ];
   x.font = '400 34px Bangers'; const bw = 140, bh = 56, gap = 54, row = btns.length * bw + (btns.length - 1) * gap;
+  x.save(); x.beginPath(); x.rect(17, 17, W - 34, H - 34); x.clip(); // marks stay inside the panel
   btns.forEach(([label, bg, fg, effect, o], i) => {
     const r = { x: (W - row) / 2 + i * (bw + gap), y: 528, w: bw, h: bh };
+    const start = 0.45 + i * 0.4, d = T == null ? -1 : T - start, p = d >= 0 && d < 0.14 ? 4 : 0; // pressed: face drops onto its shadow
     x.fillStyle = INK; x.beginPath(); x.roundRect(r.x + 5, r.y + 5, bw, bh, 14); x.fill();
-    x.fillStyle = bg; x.lineWidth = 4; x.strokeStyle = INK; x.beginPath(); x.roundRect(r.x, r.y, bw, bh, 14); x.fill(); x.stroke();
-    x.fillStyle = fg; x.textBaseline = 'middle'; x.fillText(label, r.x + bw / 2, r.y + bh / 2 + 2);
-    fx(effect, r, { scale: 1.5, ...o });
+    x.fillStyle = bg; x.lineWidth = 4; x.strokeStyle = INK; x.beginPath(); x.roundRect(r.x + p, r.y + p, bw, bh, 14); x.fill(); x.stroke();
+    x.fillStyle = fg; x.textBaseline = 'middle'; x.fillText(label, r.x + p + bw / 2, r.y + p + bh / 2 + 2);
+    fx(effect, r, { scale: 1.5, ...o }, start);
   });
-  document.title = 'ready';
-});
+  x.restore();
+}
 </script>

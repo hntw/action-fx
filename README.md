@@ -1,6 +1,6 @@
 # Action FX
 
-[![Action FX: make every click hit like a comic book](media/header.png)](https://hntw.github.io/action-fx/)
+[![Action FX: make every click hit like a comic book](media/header.gif)](https://hntw.github.io/action-fx/)
 
 An archive of comic-strip marks as feedback effects for user actions. One file, no dependencies, MIT,
 about 7 KB minified and gzipped. Most names come from Mort Walker's *The Lexicon of Comicana* (1980).
