@@ -1,0 +1,184 @@
+<title>Action FX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #fbf8ef; --panel: #ffffff; --ink: #1b1a1f; --muted: #5d5a63; --line: #1b1a1f;
+    --red: #e2412f; --yellow: #ffd23f; --blue: #2f6fdb; --dot: rgba(27, 26, 31, .09);
+    --code: #f1ede1; --night: #1d2340; --night-ink: #f4f1ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #141318; --panel: #1d1c23; --ink: #f2efe6; --muted: #a9a5b0; --line: #f2efe6;
+      --red: #ef5a45; --yellow: #ffd23f; --blue: #5b8ff0; --dot: rgba(242, 239, 230, .07);
+      --code: #24232b; --night: #fbf8ef; --night-ink: #1b1a1f;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #141318; --panel: #1d1c23; --ink: #f2efe6; --muted: #a9a5b0; --line: #f2efe6;
+    --red: #ef5a45; --yellow: #ffd23f; --blue: #5b8ff0; --dot: rgba(242, 239, 230, .07);
+    --code: #24232b; --night: #fbf8ef; --night-ink: #1b1a1f;
+  }
+  body {
+    background: var(--paper); color: var(--ink);
+    font: 16px/1.55 "Atkinson Hyperlegible", system-ui, sans-serif;
+    padding-inline: 16px; padding-block: 28px 64px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  h1, h2, .btn { font-family: Bangers, "Comic Sans MS", system-ui, sans-serif; letter-spacing: .04em; font-weight: 400; }
+  h1 { font-size: clamp(44px, 8vw, 72px); line-height: .95; margin: 0; text-wrap: balance; }
+  h1 span { color: var(--red); }
+  .lede { max-width: 62ch; margin: 8px 0 0; color: var(--muted); }
+  h2 { font-size: 28px; margin: 0 0 10px; }
+
+  /* the comic page: a grid of inked panels */
+  .page { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+  .panel {
+    position: relative; border: 3px solid var(--line); background: var(--panel);
+    background-image: radial-gradient(var(--dot) 1.2px, transparent 1.4px); background-size: 9px 9px;
+    display: grid; grid-template-rows: auto 1fr auto; gap: 8px; padding: 40px 18px 16px; min-height: 250px;
+  }
+  .stage { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: center; padding-top: 70px; }
+  .term { font-family: Bangers, "Comic Sans MS", system-ui, sans-serif; font-size: 30px; letter-spacing: .05em; line-height: 1; margin: 0; }
+  .use { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .panel.night .use { color: inherit; opacity: .75; }
+  .panel.night { background-color: var(--night); color: var(--night-ink);
+    background-image: radial-gradient(rgba(255,255,255,.08) 1.2px, transparent 1.4px); }
+  .cap {
+    position: absolute; top: -3px; left: -3px; background: var(--yellow); color: #1b1a1f;
+    border: 3px solid var(--line); padding: 2px 10px; font: 700 12px/1.4 "Atkinson Hyperlegible", sans-serif;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .btn {
+    font-size: 24px; color: #fff; background: var(--red); border: 3px solid #1b1a1f; border-radius: 12px;
+    padding: 10px 26px 8px; cursor: pointer; box-shadow: 4px 4px 0 #1b1a1f;
+  }
+  .btn.blue { background: var(--blue); } .btn.yellow { background: var(--yellow); color: #1b1a1f; }
+  .btn.round { border-radius: 50%; width: 76px; height: 76px; padding: 0; font: 700 40px/1 system-ui, sans-serif; }
+  .btn.small { font-size: 18px; padding: 6px 16px 4px; }
+  .btn:focus-visible { outline: 3px dashed var(--blue); outline-offset: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: center; }
+  .tap { width: 100%; min-height: 150px; align-self: end; border: 2px dashed var(--muted); border-radius: 10px; display: grid; place-items: center; cursor: crosshair;
+    color: var(--muted); font-size: 14px; text-align: center; }
+
+  /* controls */
+  .controls { border: 3px solid var(--line); background: var(--panel); padding: 18px; display: grid; gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 20px; }
+  label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  label output { font: 400 13px "JetBrains Mono", ui-monospace, monospace; color: var(--muted); text-transform: none; }
+  select, input[type="color"] { font: inherit; font-size: 15px; text-transform: none; letter-spacing: 0; padding: 6px; border: 2px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; }
+  input[type="range"] { width: 100%; accent-color: var(--red); }
+  .check { display: flex; align-items: center; gap: 8px; text-transform: none; font-size: 15px; letter-spacing: 0; }
+  pre { margin: 0; background: var(--code); border: 2px solid var(--line); padding: 14px 16px; overflow-x: auto;
+    font: 13px/1.6 "JetBrains Mono", ui-monospace, monospace; }
+  .note { color: var(--muted); font-size: 14px; max-width: 70ch; margin: 0; }
+  .btn { max-width: 100%; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Action <span>FX</span></h1>
+    <p class="lede">An archive of the little marks cartoonists draw to show what a character feels, turned into feedback for things people do on a page. Most of the names come from Mort Walker's <i>The Lexicon of Comicana</i> (1980). Press any button.</p>
+  </header>
+
+  <section class="page" aria-label="The archive" id="archive"></section>
+
+  <section class="controls" aria-label="Settings">
+    <h2>Tweak it</h2>
+    <div class="grid">
+      <label for="scale">Size <output id="scale-o">1&times;</output>
+        <input id="scale" type="range" min="0.5" max="2.5" step="0.1" value="1"></label>
+      <label for="speed">Speed <output id="speed-o">1&times;</output>
+        <input id="speed" type="range" min="0.25" max="2" step="0.05" value="1"></label>
+      <label for="color">Ink
+        <select id="color"><option value="auto">Auto (page text)</option><option value="#e2412f">Red</option><option value="#2f6fdb">Blue</option><option value="#c99a00">Gold</option></select></label>
+      <label class="check" for="move"><input id="move" type="checkbox" checked> Button reacts</label>
+      <label class="check" for="loop"><input id="loop" type="checkbox"> Loop (press again to stop)</label>
+    </div>
+  </section>
+
+  <section>
+    <h2>Use it</h2>
+    <pre><code>&lt;script src="actionfx.js" defer data-bind="button, .btn"&gt;&lt;/script&gt;
+
+// pick the effect per button
+&lt;button data-afx="briffits" data-afx-from="left"&gt;Send&lt;/button&gt;
+&lt;button data-afx="off"&gt;Quiet&lt;/button&gt;
+
+// or from code
+ActionFX.bind('button', { effect: 'emanata', shape: 'corners' });
+const h = ActionFX.play('squeans', el, { loop: true });   // h.stop() when done
+ActionFX.agitrons(passwordField);
+ActionFX.play('emanata', { x: 200, y: 120 });            // at a point
+ActionFX.draw(ctx, t, { effect: 'plewds', x, y, w, h }); // pure function of t, for video</code></pre>
+    <p class="note" style="margin-top:12px">One file, no dependencies, about 7 KB minified and gzipped. Marks draw on one shared overlay canvas that only runs while something is playing. Ink takes the surrounding text color and outlined shapes are filled with the page background, so it works on light and dark pages. With reduced motion on, each mark appears in place and fades, and buttons don't move. Enter and Space trigger it too.</p>
+  </section>
+</div>
+
+<script src="actionfx.js"></script>
+<script>
+  // Each panel: effect, its plain name and use come from ActionFX.effects; buttons carry their own options.
+  const PANELS = [
+    { fx: 'emanata', buttons: [['Click me', {}], ['Pow!', { shape: 'corners' }, 'blue']] },
+    { fx: 'plewds', buttons: [['Delete account', {}]] },
+    { fx: 'agitrons', buttons: [['Wrong password', {}]] },
+    { fx: 'briffits', buttons: [['Send', { from: 'left' }, 'blue'], ['Land', {}, 'yellow']] },
+    { fx: 'solrads', night: true, buttons: [['Unlocked!', {}, 'yellow']] },
+    { fx: 'squeans', buttons: [['Load 10,000 rows', {}]] },
+    { fx: 'spurls', buttons: [['Find my keys', {}, 'blue']] },
+    { fx: 'waftaroms', buttons: [['Fresh bread', {}, 'yellow']] },
+    { fx: 'grawlixes', buttons: [['Printer jammed', {}]] },
+    { fx: 'speedlines', buttons: [['Next', {}, 'blue'], ['Up', { dir: 'up' }, 'yellow']] },
+  ];
+  const TERMS = { speedlines: 'Speed lines' };
+  const archive = document.getElementById('archive');
+  for (const p of PANELS) {
+    const info = ActionFX.effects[p.fx], el = document.createElement('div');
+    el.className = 'panel' + (p.night ? ' night' : '');
+    el.innerHTML = `<span class="cap">${info.name}</span><div><h3 class="term">${TERMS[p.fx] || p.fx.charAt(0).toUpperCase() + p.fx.slice(1)}</h3>
+      <p class="use">For ${info.use}.</p></div><div class="stage"></div>`;
+    for (const [label, opts, tone] of p.buttons) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn' + (tone ? ' ' + tone : ''); b.textContent = label;
+      b.dataset.fx = p.fx; b.fxOpts = opts;
+      el.querySelector('.stage').appendChild(b);
+    }
+    archive.appendChild(el);
+  }
+
+  // Two extras that round out the page: emanata at the pointer, and a random pick from the archive.
+  archive.insertAdjacentHTML('beforeend', `
+    <div class="panel"><span class="cap">At the pointer</span><div><h3 class="term">Anywhere</h3>
+      <p class="use">Any effect can play at a point instead of on an element.</p></div>
+      <div class="tap" id="tap">Tap anywhere in this box</div></div>
+    <div class="panel night"><span class="cap">Any of them</span><div><h3 class="term">Surprise me</h3>
+      <p class="use">A random mark from the archive each press.</p></div>
+      <div class="stage"><button class="btn yellow" type="button" data-fx="random">Surprise me</button></div></div>`);
+  document.getElementById('tap').addEventListener('pointerdown', e => {
+    ActionFX.play('emanata', { x: e.clientX, y: e.clientY }, opts);
+  });
+
+  // Live settings shared by every button.
+  const opts = { scale: 1, speed: 1, color: 'auto', move: true };
+  for (const k of ['scale', 'speed']) {
+    const el = document.getElementById(k), out = document.getElementById(k + '-o');
+    el.addEventListener('input', () => { opts[k] = +el.value; out.textContent = el.value + '\u00d7'; });
+  }
+  document.getElementById('color').addEventListener('change', e => { opts.color = e.target.value; });
+  document.getElementById('move').addEventListener('change', e => { opts.move = e.target.checked; });
+  const loop = document.getElementById('loop');
+  loop.addEventListener('change', () => { for (const b of archive.querySelectorAll('.btn')) if (b.fxLive) { b.fxLive.stop(); b.fxLive = null; } });
+
+  function fire(b) {
+    if (b.fxLive) { b.fxLive.stop(); b.fxLive = null; return; }
+    let fx = b.dataset.fx;
+    if (fx === 'random') { const all = Object.keys(ActionFX.effects); fx = all[Math.floor(Math.random() * all.length)]; }
+    const h = ActionFX.play(fx, b, { ...opts, ...b.fxOpts, loop: loop.checked });
+    if (loop.checked) b.fxLive = h;
+  }
+  archive.addEventListener('pointerdown', e => { const b = e.target.closest('.btn'); if (b && e.button === 0) fire(b); });
+  archive.addEventListener('click', e => { const b = e.target.closest('.btn'); if (b && e.detail === 0) fire(b); });
+</script>

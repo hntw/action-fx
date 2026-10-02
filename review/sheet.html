@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#f4efe4">
+<canvas id="c"></canvas>
+<script src="../actionfx.js"></script>
+<script>
+// Rows: effects. Columns: time steps through one run. Each cell: a fake button + ActionFX.draw at t.
+const q = new URLSearchParams(location.search), Z = +(q.get('z') || 1.5), cols = +(q.get('cols') || 7), CW = 230, CH = 150;
+const rows = (q.get('fx') || Object.keys(ActionFX.effects).join(';')).split(';').map(s => { const i = s.indexOf(':'); return i < 0 ? [s] : [s.slice(0, i), s.slice(i + 1)]; });
+const c = document.getElementById('c'), x = c.getContext('2d');
+c.width = cols * CW * Z; c.height = rows.length * CH * Z; c.style.width = cols * CW + 'px';
+x.scale(Z, Z); x.textAlign = 'center'; x.textBaseline = 'middle';
+rows.forEach(([fx, extra], r) => {
+  const D = ActionFX.effects[fx].defaults.duration / 1000;
+  for (let i = 0; i < cols; i++) {
+    const ox = i * CW, oy = r * CH, w = 120, h = 40, bx = ox + (CW - w) / 2, by = oy + 70;
+    const t = (i + 0.5) / cols * D;
+    x.fillStyle = '#d94f30'; x.beginPath(); x.roundRect(bx, by, w, h, 10); x.fill();
+    x.fillStyle = '#fff'; x.font = '600 15px system-ui'; x.fillText('Click me', bx + w / 2, by + h / 2 + 1);
+    const o = { effect: fx, seed: 7, color: '#1c1a17', fill: '#f4efe4', x: bx, y: by, w, h };
+    if (extra) Object.assign(o, JSON.parse(extra));
+    ActionFX.draw(x, t, o);
+    x.fillStyle = '#888'; x.font = '11px system-ui'; x.fillText(fx + ' ' + Math.round(t * 1000) + 'ms', ox + CW / 2, oy + 10);
+  }
+});
+</script>
